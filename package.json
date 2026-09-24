@@ -1,0 +1,19 @@
+{
+  "name": "banknifty-journal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BANKNIFTY intraday options trading journal with cross-device sync",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.12.0",
+    "dotenv": "^16.4.5",
+    "express-session": "^1.18.0",
+    "connect-pg-simple": "^9.0.1"
+  }
+}
