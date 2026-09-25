@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BANKNIFTY Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F14; --s1:#111720; --s2:#151C26; --border:#263241; --border-2:#324256;
+    --text:#F3F6FA; --text-2:#8B98A9; --text-3:#657386;
+    --green:#33D17A; --green-bg:#12261C; --red:#F1594F; --red-bg:#2B1616;
+    --blue:#4E9FE8; --amber:#E8A93A; --pe:#C978E8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--text);}
+  body{font-family:'Inter',-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.5;
+    padding:24px;padding-top:calc(24px + env(safe-area-inset-top,0px));
+    padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));max-width:1360px;margin:0 auto;}
+  .num{font-variant-numeric:tabular-nums;}
+  .pos{color:var(--green);} .neg{color:var(--red);}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:2px 0 22px;}
+  .brand{display:flex;flex-direction:column;gap:3px;}
+  .brand h1{font-size:18px;font-weight:600;margin:0;letter-spacing:0.1px;}
+  .brand .sub{color:var(--text-3);font-size:12px;}
+  .hright{display:flex;align-items:center;gap:18px;}
+  .live{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-2);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(51,209,122,0.15);}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--s2);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text-2);}
+  .logout{background:transparent;border:1px solid var(--border);color:var(--text-2);border-radius:7px;
+    padding:7px 14px;font-size:12.5px;cursor:pointer;transition:all .18s;}
+  .logout:hover{border-color:var(--border-2);color:var(--text);}
+
+  h2.sec{font-size:12px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.07em;margin:0 0 12px;}
+
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px;}
+  .kpi{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:16px 16px 14px;
+    transition:border-color .2s, transform .2s;}
+  .kpi:hover{border-color:var(--border-2);transform:translateY(-1px);}
+  .kpi.hero{background:linear-gradient(180deg,#132318,var(--s1));border-color:#1F3D2B;}
+  .kpi .lbl{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;}
+  .kpi .val{font-size:22px;font-weight:600;}
+
+  .row2{display:grid;grid-template-columns:1.3fr 0.7fr;gap:16px;margin-bottom:22px;}
+  .panel{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:22px;}
+  .row2 .panel{margin-bottom:0;}
+
+  .risk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+  .risk-item .lbl{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+  .risk-item .val{font-size:17px;font-weight:600;}
+
+  .status{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;}
+  .status .ring{width:11px;height:11px;border-radius:50%;margin-bottom:4px;}
+  .status .state{font-size:16px;font-weight:700;letter-spacing:0.03em;}
+  .status .hint{font-size:12px;color:var(--text-2);}
+  .status .timer{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);width:100%;}
+  .status .timer .tl{font-size:10.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+  .status .timer .tv{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--amber);}
+  .status .timer .th{font-size:11.5px;color:var(--text-2);margin-top:2px;}
+
+  .tabs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .toggle{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px;}
+  .toggle button{background:transparent;border:none;color:var(--text-2);font-size:11.5px;font-weight:600;
+    padding:6px 13px;border-radius:6px;cursor:pointer;transition:all .15s;}
+  .toggle button.active{background:var(--s1);color:var(--text);box-shadow:0 0 0 1px var(--border-2);}
+  .tab-pane{display:none;}
+  .tab-pane.active{display:block;}
+
+  .field-group{margin-bottom:16px;}
+  .field-group .glabel{font-size:10.5px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
+  .fields{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  label{display:block;font-size:11px;color:var(--text-2);margin-bottom:4px;}
+  input,select,textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:7px;
+    color:var(--text);padding:8px 10px;font-size:13px;font-family:inherit;transition:border-color .18s, box-shadow .18s;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(78,159,232,0.15);}
+  textarea{resize:vertical;min-height:38px;}
+
+  .seg{display:flex;gap:6px;}
+  .seg button{flex:1;padding:8px 0;border-radius:7px;border:1px solid var(--border);background:var(--s2);
+    color:var(--text-2);cursor:pointer;font-size:12.5px;font-weight:600;}
+  .seg button.active[data-v="CE"]{background:rgba(78,159,232,0.14);border-color:var(--blue);color:var(--blue);}
+  .seg button.active[data-v="PE"]{background:rgba(201,120,232,0.14);border-color:var(--pe);color:var(--pe);}
+  .seg button.active[data-v="BUY"]{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+  .seg button.active[data-v="SELL"]{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+
+  .submit-row{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:4px;}
+  .cta{background:var(--green);color:#08160F;border:none;border-radius:8px;
+    padding:10px 22px;font-weight:700;font-size:13.5px;cursor:pointer;transition:filter .15s, transform .1s;}
+  .cta:hover{filter:brightness(1.08);} .cta:active{transform:scale(0.99);}
+  .ghost{background:transparent;color:var(--text-2);border:1px solid var(--border);
+    border-radius:7px;padding:10px 16px;font-size:13px;cursor:pointer;}
+  .ghost:hover{border-color:var(--border-2);color:var(--text);}
+
+  .toolbar{display:flex;gap:8px;margin-bottom:14px;}
+  .toolbar input{max-width:240px;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{text-align:left;color:var(--text-3);font-weight:600;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:0.05em;padding:8px;border-bottom:1px solid var(--border);}
+  tbody td{padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tbody tr:hover{background:var(--s2);}
+  .badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700;}
+  .badge.CE{background:rgba(78,159,232,0.14);color:var(--blue);}
+  .badge.PE{background:rgba(201,120,232,0.14);color:var(--pe);}
+  .side.BUY{color:var(--green);font-weight:700;} .side.SELL{color:var(--red);font-weight:700;}
+  .del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:15px;padding:2px 6px;}
+  .del:hover{color:var(--red);}
+  .notes-cell{max-width:180px;color:var(--text-2);font-size:12px;}
+  .empty{color:var(--text-2);text-align:center;padding:30px 0;font-size:13px;}
+  .formStatus{font-size:11.5px;color:var(--text-2);}
+  .hint-note{font-size:11.5px;color:var(--text-3);margin-top:10px;}
+
+  form.locked{opacity:0.45;pointer-events:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>BANKNIFTY Journal</h1>
+    <div class="sub">Intraday options — synced to your Postgres backend</div>
+  </div>
+  <div class="hright">
+    <div class="live"><span class="dot"></span>Live</div>
+    <div class="avatar">SN</div>
+    <button type="button" class="logout" id="logoutBtn">Log out</button>
+  </div>
+</header>
+
+<h2 class="sec">Performance summary</h2>
+<div class="kpis" id="stats"></div>
+
+<div class="row2">
+  <div class="panel">
+    <div class="tabs-head">
+      <h2 class="sec" style="margin:0;">Risk &amp; performance</h2>
+      <div class="toggle">
+        <button type="button" class="active" data-pane="todayPane">Today</button>
+        <button type="button" data-pane="limitsPane">Limits</button>
+      </div>
+    </div>
+
+    <div class="tab-pane active" id="todayPane"></div>
+
+    <div class="tab-pane" id="limitsPane">
+      <form id="settingsForm" class="fields" style="margin-bottom:14px;">
+        <div><label>Capital (₹)</label><input class="num" type="number" id="s_capital" step="1"></div>
+        <div><label>Profit lock — from (₹)</label><input class="num" type="number" id="s_profitMin" step="1"></div>
+        <div><label>Profit lock — to (₹)</label><input class="num" type="number" id="s_profitMax" step="1"></div>
+        <div><label>Loss lock — from (₹)</label><input class="num" type="number" id="s_lossMin" step="1"></div>
+        <div><label>Loss lock — to (₹)</label><input class="num" type="number" id="s_lossMax" step="1"></div>
+      </form>
+      <div class="hint-note">Trading locks automatically once today's P&amp;L reaches the configured limit. Saves as you edit.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 class="sec">Trading status</h2>
+    <div class="status" id="tradingStatus"></div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2 class="sec">Log new trade</h2>
+  <form id="tradeForm">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div class="field-group">
+          <div class="glabel">Trade details</div>
+          <div class="fields">
+            <div><label>Date</label><input type="date" id="f_date" required></div>
+            <div><label>Entry time</label><input type="time" id="f_time"></div>
+            <div><label>Strike</label><input class="num" type="number" id="f_strike" placeholder="54000" required></div>
+          </div>
+          <div class="fields" style="margin-top:10px;">
+            <div><label>Lot size (× 30 shares)</label><input class="num" type="number" id="f_qty" placeholder="1" value="1" required></div>
+            <div><label>Type</label><div class="seg" id="g_type"><button type="button" data-v="CE">CE</button><button type="button" data-v="PE">PE</button></div></div>
+            <div><label>Side</label><div class="seg" id="g_side"><button type="button" data-v="BUY">Buy</button><button type="button" data-v="SELL">Sell</button></div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="field-group">
+          <div class="glabel">Execution</div>
+          <div class="fields">
+            <div>
+              <label>Broker</label>
+              <input type="text" id="f_broker" list="brokerList" placeholder="Dhan">
+              <datalist id="brokerList">
+                <option value="Dhan">
+                <option value="Kotak Neo">
+              </datalist>
+            </div>
+            <div><label>Entry price</label><input class="num" type="number" step="0.05" id="f_entry" required></div>
+            <div><label>Exit price</label><input class="num" type="number" step="0.05" id="f_exit"></div>
+          </div>
+          <div class="fields" style="margin-top:10px;">
+            <div><label>Exit time</label><input type="time" id="f_exittime"></div>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="glabel">Trade context</div>
+          <div><label>Setup / reason</label><input type="text" id="f_setup" placeholder="e.g. 3m breakout retest"></div>
+        </div>
+      </div>
+    </div>
+
+    <div><label>Notes</label><textarea id="f_notes" placeholder="What went right/wrong, emotion, execution notes..."></textarea></div>
+
+    <div class="submit-row">
+      <span class="formStatus" id="formStatus"></span>
+      <button type="button" class="ghost" id="resetBtn">Clear</button>
+      <button type="submit" class="cta">+ Add trade</button>
+    </div>
+  </form>
+</div>
+
+<div class="panel">
+  <h2 class="sec">Trade history</h2>
+  <div class="toolbar">
+    <input type="text" id="tradeSearch" placeholder="Search trades">
+  </div>
+  <div id="tableWrap"><div class="empty">Loading…</div></div>
+</div>
+
+<script>
+const storage = {
+  async get(key){
+    try{
+      const res = await fetch(`/api/kv/${encodeURIComponent(key)}`);
+      if(res.status === 401){ window.location.href = '/login'; return null; }
+      if(res.status === 404) return null;
+      if(!res.ok) return null;
+      const data = await res.json();
+      return {key, value: data.value};
+    }catch(e){ return null; }
+  },
+  async set(key, value){
+    try{
+      const res = await fetch(`/api/kv/${encodeURIComponent(key)}`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({value})
+      });
+      if(res.status === 401){ window.location.href = '/login'; return null; }
+      if(!res.ok) return null;
+      return {key, value};
+    }catch(e){ return null; }
+  }
+};
+
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  try{ await fetch('/api/logout', {method:'POST'}); }catch(e){}
+  window.location.href = '/login';
+});
+
+const LOT = 30; // BANKNIFTY lot size — update here if it changes
+const DEFAULT_SETTINGS = {capital:55000, profitMin:1000, profitMax:1500, lossMin:1800, lossMax:2200};
+let trades = [];
+let settings = {...DEFAULT_SETTINGS};
+let typeVal = null, sideVal = null;
+let searchQuery = '';
+
+const $ = id => document.getElementById(id);
+const todayStr = () => new Date().toISOString().slice(0,10);
+
+function todayPnl(){
+  const today = todayStr();
+  return trades
+    .filter(t => t.date === today)
+    .reduce((sum,t) => { const p = calcPnl(t); return sum + (p || 0); }, 0);
+}
+
+function lockState(){
+  const p = todayPnl();
+  if(p >= settings.profitMin) return {locked:true, kind:'profit', pnl:p};
+  if(p <= -settings.lossMin) return {locked:true, kind:'loss', pnl:p};
+  return {locked:false, kind:null, pnl:p};
+}
+
+async function loadSettings(){
+  try{
+    const res = await storage.get('banknifty-settings');
+    settings = res ? {...DEFAULT_SETTINGS, ...JSON.parse(res.value)} : {...DEFAULT_SETTINGS};
+  }catch(e){
+    settings = {...DEFAULT_SETTINGS};
+  }
+  $('s_capital').value = settings.capital;
+  $('s_profitMin').value = settings.profitMin;
+  $('s_profitMax').value = settings.profitMax;
+  $('s_lossMin').value = settings.lossMin;
+  $('s_lossMax').value = settings.lossMax;
+}
+
+async function saveSettings(){
+  const next = {
+    capital: parseFloat($('s_capital').value) || 0,
+    profitMin: parseFloat($('s_profitMin').value) || 0,
+    profitMax: parseFloat($('s_profitMax').value) || 0,
+    lossMin: parseFloat($('s_lossMin').value) || 0,
+    lossMax: parseFloat($('s_lossMax').value) || 0,
+  };
+  settings = next;
+  try{
+    await storage.set('banknifty-settings', JSON.stringify(settings));
+  }catch(e){ /* best effort */ }
+  render();
+}
+
+['s_capital','s_profitMin','s_profitMax','s_lossMin','s_lossMax'].forEach(id=>{
+  $(id).addEventListener('change', saveSettings);
+});
+
+// Tab toggle for Risk & performance card
+document.querySelectorAll('.toggle button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const toggle = btn.parentElement;
+    toggle.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const card = toggle.closest('.panel');
+    card.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+    card.querySelector('#'+btn.dataset.pane).classList.add('active');
+  });
+});
+
+function renderTodayPane(){
+  const st = lockState();
+  const pnlCls = st.pnl>0?'pos':(st.pnl<0?'neg':'');
+  $('todayPane').innerHTML = `
+    <div class="risk-grid">
+      <div class="risk-item"><div class="lbl">Today's P&L</div><div class="val num ${pnlCls}">${fmtMoney(st.pnl)}</div></div>
+      <div class="risk-item"><div class="lbl">Profit lock</div><div class="val num">₹${settings.profitMin.toLocaleString('en-IN')} → ₹${settings.profitMax.toLocaleString('en-IN')}</div></div>
+      <div class="risk-item"><div class="lbl">Loss limit</div><div class="val num">₹${settings.lossMin.toLocaleString('en-IN')} → ₹${settings.lossMax.toLocaleString('en-IN')}</div></div>
+      <div class="risk-item"><div class="lbl">Capital</div><div class="val num">₹${settings.capital.toLocaleString('en-IN')}</div></div>
+    </div>
+  `;
+}
+
+function setToggle(groupId, val){
+  document.querySelectorAll('#'+groupId+' button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.v === val);
+  });
+}
+$('g_type').addEventListener('click', e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  typeVal = e.target.dataset.v; setToggle('g_type', typeVal);
+});
+$('g_side').addEventListener('click', e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  sideVal = e.target.dataset.v; setToggle('g_side', sideVal);
+});
+
+function calcPnl(t){
+  if(t.exit === null || t.exit === undefined || t.exit === '') return null;
+  const diff = t.side === 'BUY' ? (t.exit - t.entry) : (t.entry - t.exit);
+  return +(diff * t.qty * LOT).toFixed(2);
+}
+
+function fmtMoney(v){
+  if(v === null || v === undefined) return '—';
+  const sign = v > 0 ? '+' : '';
+  return sign + '₹' + v.toLocaleString('en-IN', {maximumFractionDigits:2});
+}
+
+async function loadTrades(){
+  try{
+    const res = await storage.get('banknifty-trades');
+    trades = res ? JSON.parse(res.value) : [];
+  }catch(e){
+    trades = [];
+  }
+  if(trades.length === 0){
+    trades.push({
+      id: 'demo-' + Date.now().toString(36),
+      date: todayStr(),
+      time: '09:35',
+      strike: '54000',
+      optType: 'CE',
+      side: 'BUY',
+      qty: 1,
+      entry: 220,
+      exit: 265,
+      setup: '3m breakout retest',
+      notes: 'Demo entry — clean entry, held through pullback. Delete anytime.',
+    });
+    await saveTrades();
+  }
+  render();
+}
+
+async function saveTrades(){
+  try{
+    await storage.set('banknifty-trades', JSON.stringify(trades));
+  }catch(e){
+    $('formStatus').textContent = 'Could not save — try again.';
+  }
+}
+
+function render(){
+  renderStats();
+  renderTable();
+  renderTodayPane();
+  renderStatus();
+}
+
+function renderStats(){
+  const closed = trades.filter(t => t.exit !== null && t.exit !== undefined && t.exit !== '');
+  const pnls = closed.map(calcPnl);
+  const total = pnls.reduce((a,b)=>a+b, 0);
+  const wins = pnls.filter(p=>p>0);
+  const losses = pnls.filter(p=>p<0);
+  const winRate = closed.length ? (wins.length/closed.length*100) : 0;
+  const avgWin = wins.length ? wins.reduce((a,b)=>a+b,0)/wins.length : 0;
+  const avgLoss = losses.length ? losses.reduce((a,b)=>a+b,0)/losses.length : 0;
+
+  const stats = [
+    {k:'Total trades', v: trades.length, cls:'', hero:false},
+    {k:'Closed', v: closed.length, cls:'', hero:false},
+    {k:'Win rate', v: closed.length? winRate.toFixed(1)+'%' : '—', cls:'', hero:false},
+    {k:'Total P&L', v: fmtMoney(total), cls: total>0?'pos':(total<0?'neg':''), hero:true},
+    {k:'Avg win', v: wins.length? fmtMoney(avgWin):'—', cls:'pos', hero:false},
+    {k:'Avg loss', v: losses.length? fmtMoney(avgLoss):'—', cls:'neg', hero:false},
+  ];
+  $('stats').innerHTML = stats.map(s=>
+    `<div class="kpi${s.hero?' hero':''}"><div class="lbl">${s.k}</div><div class="val num ${s.cls}">${s.v}</div></div>`
+  ).join('');
+}
+
+function matchesSearch(t, q){
+  if(!q) return true;
+  const hay = [t.date, t.time, t.strike, t.optType, t.side, t.broker, t.setup, t.notes]
+    .filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(q);
+}
+
+function renderTable(){
+  const q = searchQuery.trim().toLowerCase();
+  const visible = trades.filter(t => matchesSearch(t, q));
+
+  if(!trades.length){
+    $('tableWrap').innerHTML = '<div class="empty">No trades logged yet. Add your first one above.</div>';
+    return;
+  }
+  if(!visible.length){
+    $('tableWrap').innerHTML = '<div class="empty">No trades match your search.</div>';
+    return;
+  }
+  const rows = [...visible].sort((a,b)=> (b.date+b.time).localeCompare(a.date+a.time)).map(t=>{
+    const pnl = calcPnl(t);
+    const pnlCls = pnl===null?'':(pnl>0?'pos':(pnl<0?'neg':''));
+    return `<tr>
+      <td class="num">${t.date}${t.time? ' '+t.time:''}</td>
+      <td class="num">${t.strike}</td>
+      <td><span class="badge ${t.optType}">${t.optType}</span></td>
+      <td><span class="side ${t.side}">${t.side}</span></td>
+      <td class="num">${t.qty}</td>
+      <td class="num">${t.entry}</td>
+      <td class="num">${t.exit ?? '—'}${t.exitTime? ' <span style=\"color:var(--text-3)\">'+t.exitTime+'</span>':''}</td>
+      <td class="num ${pnlCls}">${pnl===null?'open':fmtMoney(pnl)}</td>
+      <td>${t.broker ? esc(t.broker) : '—'}</td>
+      <td>${t.setup ? esc(t.setup) : '—'}</td>
+      <td class="notes-cell">${t.notes ? esc(t.notes) : ''}</td>
+      <td><button class="del" data-id="${t.id}" title="Delete">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  $('tableWrap').innerHTML = `<table>
+    <thead><tr>
+      <th>Date/time</th><th>Strike</th><th>Type</th><th>Side</th><th>Lots</th>
+      <th>Entry</th><th>Exit</th><th>P&L</th><th>Broker</th><th>Setup</th><th>Notes</th><th></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  $('tableWrap').querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      trades = trades.filter(t=>t.id !== btn.dataset.id);
+      render();
+      await saveTrades();
+    });
+  });
+}
+
+$('tradeSearch').addEventListener('input', (e)=>{
+  searchQuery = e.target.value;
+  renderTable();
+});
+
+function esc(s){
+  const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+}
+
+let cooldownUntil = null; // epoch ms — next entry allowed after this
+
+async function loadCooldown(){
+  try{
+    const res = await storage.get('banknifty-cooldown');
+    cooldownUntil = res ? parseInt(JSON.parse(res.value), 10) : null;
+  }catch(e){
+    cooldownUntil = null;
+  }
+}
+
+async function saveCooldown(){
+  try{
+    await storage.set('banknifty-cooldown', JSON.stringify(cooldownUntil));
+  }catch(e){ /* best effort */ }
+}
+
+function cooldownRemainingMs(){
+  if(!cooldownUntil) return 0;
+  return Math.max(0, cooldownUntil - Date.now());
+}
+
+function fmtCountdown(ms){
+  const totalSec = Math.ceil(ms/1000);
+  const m = Math.floor(totalSec/60);
+  const s = totalSec%60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function renderStatus(){
+  const daily = lockState();
+  const remaining = cooldownRemainingMs();
+  const el = $('tradingStatus');
+
+  let ringColor, ringShadow, state, hint;
+  if(daily.locked && daily.kind === 'profit'){
+    ringColor = 'var(--green)'; ringShadow = 'rgba(51,209,122,0.18)'; state = 'TRADING LOCKED';
+    hint = 'Profit target reached — locked for today';
+  } else if(daily.locked && daily.kind === 'loss'){
+    ringColor = 'var(--red)'; ringShadow = 'rgba(241,89,79,0.18)'; state = 'TRADING LOCKED';
+    hint = 'Loss limit reached — locked for today';
+  } else if(remaining > 0){
+    ringColor = 'var(--amber)'; ringShadow = 'rgba(232,169,58,0.18)'; state = 'TRADE ACTIVE';
+    hint = 'Cooling down before the next entry';
+  } else {
+    ringColor = 'var(--green)'; ringShadow = 'rgba(51,209,122,0.18)'; state = 'READY';
+    hint = 'You can log the next trade';
+  }
+
+  let timerHtml;
+  if(!cooldownUntil){
+    timerHtml = `<div class="tl">Next-entry timer</div><div class="tv" style="color:var(--text-3)">—</div><div class="th">Starts once you log a trade</div>`;
+  } else if(remaining > 0){
+    timerHtml = `<div class="tl">Next entry in</div><div class="tv">${fmtCountdown(remaining)}</div><div class="th">15 min since last entry time</div>`;
+  } else {
+    timerHtml = `<div class="tl">Timer</div><div class="tv" style="color:var(--green)">Ready</div><div class="th">You can log the next trade</div>`;
+  }
+
+  el.innerHTML = `
+    <span class="ring" style="background:${ringColor};box-shadow:0 0 0 4px ${ringShadow};"></span>
+    <span class="state" style="color:${ringColor};">${state}</span>
+    <span class="hint">${hint}</span>
+    <div class="timer">${timerHtml}</div>
+  `;
+  updateFormLock();
+}
+
+function updateFormLock(){
+  const daily = lockState();
+  const cooling = cooldownRemainingMs() > 0;
+  $('tradeForm').classList.toggle('locked', daily.locked || cooling);
+}
+
+async function loadBrokers(){
+  let brokers = ['Dhan', 'Kotak Neo'];
+  try{
+    const res = await storage.get('banknifty-brokers');
+    if(res) brokers = JSON.parse(res.value);
+  }catch(e){ /* use defaults */ }
+  renderBrokerList(brokers);
+}
+
+function renderBrokerList(brokers){
+  $('brokerList').innerHTML = brokers.map(b=>`<option value="${esc(b)}">`).join('');
+}
+
+async function rememberBroker(name){
+  if(!name) return;
+  const current = Array.from($('brokerList').options).map(o=>o.value);
+  if(current.includes(name)) return;
+  const next = [...current, name];
+  renderBrokerList(next);
+  try{
+    await storage.set('banknifty-brokers', JSON.stringify(next));
+  }catch(e){ /* best effort */ }
+}
+
+$('resetBtn').addEventListener('click', ()=>{
+  $('tradeForm').reset();
+  typeVal = null; sideVal = 'BUY';
+  setToggle('g_type', null); setToggle('g_side', sideVal);
+  $('f_date').valueAsDate = new Date();
+  $('formStatus').textContent = '';
+});
+
+$('tradeForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(lockState().locked){
+    $('formStatus').textContent = 'Locked for today — daily limit reached.';
+    return;
+  }
+  if(cooldownRemainingMs() > 0){
+    $('formStatus').textContent = 'Wait for the next-entry timer to finish.';
+    return;
+  }
+  if(!typeVal || !sideVal){
+    $('formStatus').textContent = 'Pick CE/PE and Buy/Sell.';
+    return;
+  }
+  const entry = parseFloat($('f_entry').value);
+  const qty = parseFloat($('f_qty').value);
+  if(isNaN(entry) || isNaN(qty)){
+    $('formStatus').textContent = 'Entry price and qty are required.';
+    return;
+  }
+  const t = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    date: $('f_date').value,
+    time: $('f_time').value,
+    strike: $('f_strike').value,
+    optType: typeVal,
+    side: sideVal,
+    qty: qty,
+    entry: entry,
+    exit: $('f_exit').value === '' ? null : parseFloat($('f_exit').value),
+    exitTime: $('f_exittime').value,
+    broker: $('f_broker').value.trim(),
+    setup: $('f_setup').value,
+    notes: $('f_notes').value,
+  };
+  trades.push(t);
+  await rememberBroker(t.broker);
+  const entryTs = t.time ? new Date(`${t.date}T${t.time}`).getTime() : Date.now();
+  cooldownUntil = entryTs + 15*60*1000;
+  await saveCooldown();
+  $('formStatus').textContent = 'Trade added.';
+  render();
+  await saveTrades();
+  $('tradeForm').reset();
+  typeVal = null; sideVal = 'BUY';
+  setToggle('g_type', null); setToggle('g_side', sideVal);
+  $('f_date').valueAsDate = new Date();
+  setTimeout(()=>{ if($('formStatus').textContent==='Trade added.') $('formStatus').textContent=''; }, 2000);
+});
+
+$('f_date').valueAsDate = new Date();
+sideVal = 'BUY'; setToggle('g_side', sideVal);
+loadBrokers();
+loadSettings().then(loadTrades);
+loadCooldown().then(renderStatus);
+setInterval(renderStatus, 1000);
+</script>
+</body>
+</html>
